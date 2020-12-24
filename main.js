@@ -16,24 +16,26 @@ archive2.pipe(outputOff)
 fs.createReadStream(`${dirName}.zip`)
     .pipe(unzipper.Extract({path: './tmp'}))
     .on('finish', ()=>{
-        createConfig()
-        createZip(true)
-        createZip(false)
+        setTimeout(() => {
+            createConfig()
+            createZip(true)
+            createZip(false)
+        }, 1000);
     })
 
 var createConfig = ()=>{
     // 不管DemoOn的值，寫出兩個版本的
-    let config = fs.readFileSync(`./tmp/${dirName}/config.json`, {encoding: 'utf8'})
+    let config = fs.readFileSync(`./tmp/${dirName}/gameConfig.json`, {encoding: 'utf8'})
     config = JSON.parse(config)
-    config.historyOn = false
+    config.HistoricalRecordButtonAvailable = false
     config.DemoOn = true
-    fs.writeFileSync(`./tmp/${dirName}/config.On.json`, JSON.stringify(config, null, 2))
+    fs.writeFileSync(`./tmp/${dirName}/gameConfig.On.json`, JSON.stringify(config, null, 2))
 
     config.DemoOn = false
-    fs.writeFileSync(`./tmp/${dirName}/config.Off.json`, JSON.stringify(config, null, 2))
+    fs.writeFileSync(`./tmp/${dirName}/gameConfig.Off.json`, JSON.stringify(config, null, 2))
 
     // 刪除原本的config.json
-    fs.unlinkSync(`./tmp/${dirName}/config.json`)
+    fs.unlinkSync(`./tmp/${dirName}/gameConfig.json`)
 }
 
 var createZip = (flag) =>{
@@ -44,9 +46,9 @@ var createZip = (flag) =>{
         if(_dir.isDirectory()){
             archive.directory(fileName, _dir.name)
         }else{
-            if(/config*/.test(_dir.name)){      // 是要改的 config 檔
+            if(/gameConfig*/.test(_dir.name)){      // 是要改的 config 檔
                 if(/.Off/.test(_dir.name) != flag){
-                    archive.append(fs.createReadStream(fileName), {name: 'config.json'})
+                    archive.append(fs.createReadStream(fileName), {name: 'gameConfig.json'})
                 }
             }else{
                 archive.append(fs.createReadStream(fileName), {name: _dir.name})
